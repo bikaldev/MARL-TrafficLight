@@ -137,5 +137,5 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
 
 
 if __name__ == "__main__":
-    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../road_network.net.xml')
+    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../sumo/road_network.net.xml')
     run(graph, edge_list, node_list, node_to_edge, node_neighbourhood)
