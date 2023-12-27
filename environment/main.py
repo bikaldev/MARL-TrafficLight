@@ -1,16 +1,24 @@
 import sumolib
 import random
+from copy import deepcopy
 
 from edge import Edge, EdgePosition
 from node import Node
 from simulation_env import SimulationEnv
 from q_network import node_initialization, Q_NETWORK
+from replay_buffer import ReplayBuffer
+
+import tensorflow as tf
 
 EPOCHS = 10
 SIGMA = 0.99
-EPSILON = 1
-C1 = 300
-EPISODE_LENGTH = 5000
+EPSILON = 0.9
+C1 = 20
+EPISODE_LENGTH = 10000
+BUFFER_SIZE = 50
+BATCH_SIZE = 16
+LEARNING_RATE = 0.01
+OPTIMIZER = tf.keras.optimizers.Adam(learning_rate = LEARNING_RATE)
 
 # This function creates a logical graph from the provided .net.xml file of a road network
 # It returns a tuple (nodes, edges) where nodes is a list of objects of type nodes 
@@ -82,12 +90,18 @@ def init_network(filename):
 
 def get_e_greedy_action(q_val, e = EPSILON):
     if(random.random() < e):
-        if(q_val[0:0] > q_val[0:1]):
+        if(q_val[:,0] > q_val[:,1]):
             return 0
         else:
             return 1
     else:
         return random.randint(0,1)
+    
+def get_greedy_action_value(q_val):
+    if(q_val[:,0] > q_val[:,1]):
+        return q_val[:,0]
+    else:
+        return q_val[:,1]
 
 def get_joint_action(action_space, node_list, q_val_list):
     joint_action = dict()
@@ -96,45 +110,120 @@ def get_joint_action(action_space, node_list, q_val_list):
         joint_action[node] = action
     
     return joint_action
+
+def compute_loss(minibatch, node_list, q_net: Q_NETWORK):
+    loss = 0.0
+    state_list = []
+    for transition in minibatch[0:-1]:
+        inputs, joint_action, _, y_val_list = transition
+        q_val_list, state_list = q_net.call(inputs, state_list)
+        for node_idx in range(len(node_list)):
+            node_id = node_list[node_idx]
+            loss += (y_val_list[node_idx] - q_val_list[node_idx][0] if node_idx not in joint_action else q_val_list[node_idx][joint_action[node_id]]) ** 2
     
+    return loss
+
+def print_list(lt):
+    for item in lt:
+        print(item)
 
 # Runs the simulation
 def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
     env = SimulationEnv()
     q_net = Q_NETWORK(graph,edge_list, node_list, node_to_edge, node_neighbourhood)
+ 
     tar_q_net = Q_NETWORK(graph, edge_list, node_list, node_to_edge, node_neighbourhood)
     env.set_graph(graph)
+    avg_reward_list = []
     for epoch in range(EPOCHS):
         env.start()
         sim_step = 0
         time_step = 0
         state_list = []
-        while(sim_step < EPISODE_LENGTH):
-            action_space = env.get_action_space()
-            if(env.get_action_space()):
-                graph, reward_list = env.observe()
-                if(time_step != 0):
-                    #Store transition(inputs, q_val_list, joint_action, reward_list) on replay buffer
-                    pass
+        buffer = ReplayBuffer(BUFFER_SIZE)
+        
+        #Initialize environment variables
+        inputs = ()
+        joint_action = {}
+        q_val_list = []
+        reward_list = []
+       
+        print("Epoch: "+str(epoch))
+        if(epoch >= 1):
+            avg_reward = sum(avg_reward_list)/len(avg_reward_list)
+            print("avg reward of epoch "+str(epoch) + " is "+str(avg_reward))
 
-                inputs = node_initialization(graph, edge_list, node_list)
-                q_val_list, state_list = q_net.call(inputs, state_list)
-                joint_action = get_joint_action(action_space, node_list, q_val_list)
-                env.apply_action(joint_action)
+        while(sim_step < EPISODE_LENGTH):
+            if(time_step % 25 != 0 or time_step == 0):
+                action_space = env.get_action_space()
+                if(action_space):
+                    graph, reward_list = env.observe(node_list)
+                    if(time_step != 0):
+                        avg_reward_list.append(sum(reward_list))
+                        print("Time Step: "+str(time_step) + " Sim step: "+str(sim_step) +" Total Reward : "+str(sum(reward_list)))
+                        print_list(q_val_list)
+                        # print("inputs: ")
+                        # print_list(inputs)
+                        # print("joint_action: ")
+                        # print(joint_action)
+                        # print("reward_list: ")
+                        # print(reward_list)
+                        #Store transition(inputs, joint_action, reward_list) on replay buffer
+                        buffer.push((inputs, joint_action, reward_list))
+                        
+
+                    inputs = node_initialization(graph, edge_list, node_list)
+                    q_val_list, state_list = q_net.call(inputs, state_list)
+                    joint_action = get_joint_action(action_space, node_list, q_val_list)
+                    env.apply_action(joint_action)
+                    time_step += 1
+                    
+                
+                sim_step += 1
+                env.next_step()
+            else:
+
+        # env.stop()
+
+                for c in range(C1):
+                    with tf.GradientTape() as tape:
+                        minibatch = buffer.sample(BATCH_SIZE)
+                        state_list = []
+                        for trans_idx in range(len(minibatch)-1):
+                            transition_t = minibatch[trans_idx]
+                            transition_t_pl_1 = minibatch[trans_idx+1]
+                            q_tar_val_list,state_list =  tar_q_net.call(transition_t_pl_1[0], state_list)
+                            y_val_list = list()
+                            for node_idx in range(len(node_list)):
+                                if(node_list[node_idx] in transition_t_pl_1[1]):
+                                    y_val = transition_t[2][node_idx] + EPSILON * get_greedy_action_value(q_tar_val_list[node_idx])
+                                else:
+                                    y_val = transition_t[2][node_idx] + EPSILON * q_tar_val_list[node_idx][0]
+                                y_val_list.append(y_val)
+                            
+                            minibatch[trans_idx] = minibatch[trans_idx] + (y_val_list,)
+                        
+                        loss = compute_loss(minibatch, node_list, q_net)
+                    
+                    grads = tape.gradient(loss, q_net.trainable_variables)
+                    # print(q_net.trainable_variables)
+                    # print(grads)
+                    # return None
+                    print(len(grads), len(q_net.trainable_variables))
+                    # print(grads)
+                    OPTIMIZER.apply_gradients(zip(grads, q_net.trainable_variables))
+                    # return None
+        
+                # print(q_net.trainable_variables)
+                tar_q_net = deepcopy(q_net)
+                time_step += 1
         
         env.stop()
 
-        for c in range(C1):
-            # sample a minibatch of transition in continous interval
-            # calc q_val with tar_q_net
-            # calc y for every agent
-            # gradient descent on loss
-            pass
 
 
 
     
-
 
 if __name__ == "__main__":
     graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../sumo/road_network.net.xml')

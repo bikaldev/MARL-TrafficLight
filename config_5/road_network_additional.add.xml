@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-12-27 17:09:03 by Eclipse SUMO netedit Version 1.18.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Detectors -->
+    <laneAreaDetector id="e2_0" lane="e2_0" pos="38.76" length="50.00" period="10.00" file="./detector/e2_0.xml"/>
+    <laneAreaDetector id="e2_1" lane="e2_1" pos="37.01" length="50.00" period="10.00" file="./detector/e2_1.xml"/>
+    <laneAreaDetector id="e2_10" lane="e2_10" pos="426.58" length="50.00" period="10.00" file="./detector/e2_10.xml"/>
+    <laneAreaDetector id="e2_11" lane="e2_11" pos="427.48" length="50.00" period="10.00" file="./detector/e2_11.xml"/>
+    <laneAreaDetector id="e2_12" lane="e2_12" pos="326.97" length="50.00" period="10.00" file="./detector/e2_12.xml"/>
+    <laneAreaDetector id="e2_13" lane="e2_13" pos="327.96" length="50.00" period="10.00" file="./detector/e2_13.xml"/>
+    <laneAreaDetector id="e2_14" lane="e2_14" pos="428.21" length="50.00" period="10.00" file="./detector/e2_14.xml"/>
+    <laneAreaDetector id="e2_15" lane="e2_15" pos="428.21" length="50.00" period="10.00" file="./detector/e2_15.xml"/>
+    <laneAreaDetector id="e2_16" lane="e2_16" pos="38.35" length="50.00" period="10.00" file="./detector/e2_16.xml"/>
+    <laneAreaDetector id="e2_17" lane="e2_17" pos="38.42" length="50.00" period="10.00" file="./detector/e2_17.xml"/>
+    <laneAreaDetector id="e2_18" lane="e2_18" pos="39.44" length="50.00" period="10.00" file="./detector/e2_18.xml"/>
+    <laneAreaDetector id="e2_19" lane="e2_19" pos="39.52" length="50.00" period="10.00" file="./detector/e2_19.xml"/>
+    <laneAreaDetector id="e2_2" lane="e2_2" pos="38.49" length="50.00" period="10.00" file="./detector/e2_2.xml"/>
+    <laneAreaDetector id="e2_20" lane="e2_20" pos="428.63" length="50.00" period="10.00" file="./detector/e2_20.xml"/>
+    <laneAreaDetector id="e2_21" lane="e2_21" pos="428.50" length="50.00" period="10.00" file="./detector/e2_21.xml"/>
+    <laneAreaDetector id="e2_22" lane="e2_22" pos="38.61" length="50.00" period="10.00" file="./detector/e2_22.xml"/>
+    <laneAreaDetector id="e2_23" lane="e2_23" pos="39.15" length="50.00" period="10.00" file="./detector/e2_23.xml"/>
+    <laneAreaDetector id="e2_24" lane="e2_24" pos="325.55" length="50.00" period="10.00" file="./detector/e2_24.xml"/>
+    <laneAreaDetector id="e2_25" lane="e2_25" pos="326.21" length="50.00" period="10.00" file="./detector/e2_25.xml"/>
+    <laneAreaDetector id="e2_26" lane="e2_26" pos="38.96" length="50.00" period="10.00" file="./detector/e2_26.xml"/>
+    <laneAreaDetector id="e2_27" lane="e2_27" pos="39.43" length="50.00" period="10.00" file="./detector/e2_27.xml"/>
+    <laneAreaDetector id="e2_28" lane="e2_28" pos="39.03" length="50.00" period="10.00" file="./detector/e2_28.xml"/>
+    <laneAreaDetector id="e2_29" lane="e2_29" pos="39.58" length="50.00" period="10.00" file="./detector/e2_29.xml"/>
+    <laneAreaDetector id="e2_3" lane="e2_3" pos="36.88" length="50.00" period="10.00" file="./detector/e2_3.xml"/>
+    <laneAreaDetector id="e2_30" lane="e2_30" pos="37.85" length="50.00" period="10.00" file="./detector/e2_30.xml"/>
+    <laneAreaDetector id="e2_31" lane="e2_31" pos="37.85" length="50.00" period="10.00" file="./detector/e2_31.xml"/>
+    <laneAreaDetector id="e2_4" lane="e2_4" pos="429.19" length="50.00" period="10.00" file="./detector/e2_4.xml"/>
+    <laneAreaDetector id="e2_5" lane="e2_5" pos="428.61" length="50.00" period="10.00" file="./detector/e2_5.xml"/>
+    <laneAreaDetector id="e2_6" lane="e2_6" pos="33.27" length="50.00" period="10.00" file="./detector/e2_6.xml"/>
+    <laneAreaDetector id="e2_7" lane="e2_7" pos="34.32" length="50.00" period="10.00" file="./detector/e2_7.xml"/>
+    <laneAreaDetector id="e2_8" lane="e2_8" pos="31.44" length="50.00" period="10.00" file="./detector/e2_8.xml"/>
+    <laneAreaDetector id="e2_9" lane="e2_9" pos="31.98" length="50.00" period="10.00" file="./detector/e2_9.xml"/>
+</additional>
