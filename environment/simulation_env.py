@@ -3,6 +3,7 @@ import sys
 import optparse
 from sumolib import checkBinary  # Checks for the binary in environ vars
 import traci
+import math
 
 
 class SimulationEnv:
@@ -22,16 +23,17 @@ class SimulationEnv:
         return options
 
     def start(self):
-        options = self.__get_options()
+        # options = self.__get_options()
 
-        # check binary
-        if options.nogui:
-            sumoBinary = checkBinary('sumo')
-        else:
-            sumoBinary = checkBinary('sumo-gui')
+        # # check binary
+        # if options.nogui:
+        #     sumoBinary = checkBinary('sumo')
+        # else:
+        #     sumoBinary = checkBinary('sumo-gui')
+        sumoBinary = checkBinary('sumo')
          # traci starts sumo as a subprocess and then this script connects and runs
-        traci.start([sumoBinary, "-c", "../road_network_map_config.sumocfg",
-                             "--tripinfo-output", "tripinfo.xml"])
+        traci.start([sumoBinary, "-c", "../config_5/road_network_map_config.sumocfg",
+                             "--tripinfo-output", "../config_5/tripinfo.xml"])
         
         traci.simulationStep()
         
@@ -69,7 +71,7 @@ class SimulationEnv:
                 # If a traffic light is in yellow phase it can't be changed, if it is in other phases it can be changed
                 # But since the least timestep for a phase is defined as 20 timestep, thus only at the end of it
                 # can the phases be changed.
-                if(traci.trafficlight.getPhase(node) % 2 == 0 and traci.trafficlight.getNextSwitch(node) - traci.simulation.getTime() == 1):
+                if(traci.trafficlight.getPhase(node) % 2 == 0 and traci.trafficlight.getNextSwitch(node) - traci.simulation.getTime() == 0):
                     # It has action available
                     action_set[node_obj.id] = (0,1)
 
@@ -90,9 +92,9 @@ class SimulationEnv:
                     num_of_vehicles = traci.lanearea.getLastIntervalVehicleNumber(lane)
                     avg_speed = traci.lanearea.getLastIntervalMeanSpeed(lane)
                     self.graph[1][edge].set_lane_data(lane, {
-                        'q_len': queue_length,
-                        'n_of_vehs': num_of_vehicles,
-                        'avg_speed': avg_speed
+                        'q_len': (queue_length - 28.20)/math.sqrt(958.17),
+                        'n_of_vehs': (num_of_vehicles - 4.51)/math.sqrt(15.56),
+                        'avg_speed': (avg_speed-3.87)/math.sqrt(41.65)
                     })
             
         # Store the traffic light phaseID for every traffic light.
