@@ -14,7 +14,7 @@ EPOCHS = 10
 SIGMA = 0.99
 EPSILON = 0.9
 C1 = 20
-EPISODE_LENGTH = 10000
+EPISODE_LENGTH = 3000
 BUFFER_SIZE = 50
 BATCH_SIZE = 16
 LEARNING_RATE = 0.01
@@ -226,5 +226,7 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
     
 
 if __name__ == "__main__":
-    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../sumo/road_network.net.xml')
+    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../config_5/road_network.net.xml')
+    print(node_list)
+    print(edge_list)
     run(graph, edge_list, node_list, node_to_edge, node_neighbourhood)

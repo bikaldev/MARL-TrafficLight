@@ -1,9 +1,9 @@
 import tensorflow as tf
 import numpy as np
-import keras
 
-EDGE_INPUT_SHAPE = (6,1)
-EDGE_OUTPUT_SHAPE = (24,1)
+NUM_OF_LANES_PER_EDGE = 1
+EDGE_INPUT_SHAPE = (3*NUM_OF_LANES_PER_EDGE,1)
+EDGE_OUTPUT_SHAPE = (EDGE_INPUT_SHAPE[0] * 4,1)
 NODE_INPUT_SHAPE = (EDGE_OUTPUT_SHAPE[0] + 4, 1)
 NODE_OUTPUT_SHAPE = (NODE_INPUT_SHAPE[0],1)
  # for each edge
