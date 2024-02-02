@@ -32,8 +32,8 @@ class SimulationEnv:
         #     sumoBinary = checkBinary('sumo-gui')
         sumoBinary = checkBinary('sumo')
          # traci starts sumo as a subprocess and then this script connects and runs
-        traci.start([sumoBinary, "-c", "../config_5/road_network_map_config.sumocfg",
-                             "--tripinfo-output", "../config_5/tripinfo.xml"])
+        traci.start([sumoBinary, "-c", "../config_3/road_network_map_config.sumocfg",
+                             "--tripinfo-output", "../config_3/tripinfo.xml"])
         
         traci.simulationStep()
         
