@@ -11,7 +11,7 @@ from replay_buffer import ReplayBuffer
 import tensorflow as tf
 # from tensorflow import tf_agents
 
-EPOCHS = 2
+EPOCHS = 100
 SIGMA = 0.99
 EPSILON = 0.9
 C1 = 20
@@ -20,6 +20,8 @@ BUFFER_SIZE = 50
 BATCH_SIZE = 16
 LEARNING_RATE = 0.01
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate = LEARNING_RATE)
+
+weight_path = './weights/'
 
 # This function creates a logical graph from the provided .net.xml file of a road network
 # It returns a tuple (nodes, edges) where nodes is a list of objects of type nodes 
@@ -162,7 +164,7 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                     if(time_step != 0):
                         avg_reward_list.append(sum(reward_list))
                         print("Time Step: "+str(time_step) + " Sim step: "+str(sim_step) +" Total Reward : "+str(sum(reward_list)))
-                        print_list(q_val_list)
+                        # print_list(q_val_list)
                         # print("inputs: ")
                         # print_list(inputs)
                         # print("joint_action: ")
@@ -216,9 +218,12 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                     # return None
         
                 # print(q_net.trainable_variables)
-                q_net.save_weights('q_net.weights.h5')
-                tar_q_net = deepcopy(q_net)
-                tar_q_net.save_weights('tar_q_net.weights.h5')
+                if(epoch % 2 == 0):
+                    tar_q_net = deepcopy(q_net)
+                
+                if(epoch % 10 == 0):
+                    q_net.save_weights(path + 'q_net_'+str(epoch)+'.weights.h5')
+                    tar_q_net.save_weights(path + 'tar_q_net_'+str(epoch)+'.weights.h5')
 
                 time_step += 1
         
