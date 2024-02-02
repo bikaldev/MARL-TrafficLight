@@ -9,12 +9,13 @@ from q_network import node_initialization, Q_NETWORK
 from replay_buffer import ReplayBuffer
 
 import tensorflow as tf
+# from tensorflow import tf_agents
 
-EPOCHS = 10
+EPOCHS = 2
 SIGMA = 0.99
 EPSILON = 0.9
 C1 = 20
-EPISODE_LENGTH = 3000
+EPISODE_LENGTH = 3500
 BUFFER_SIZE = 50
 BATCH_SIZE = 16
 LEARNING_RATE = 0.01
@@ -215,7 +216,10 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                     # return None
         
                 # print(q_net.trainable_variables)
+                q_net.save_weights('q_net.weights.h5')
                 tar_q_net = deepcopy(q_net)
+                tar_q_net.save_weights('tar_q_net.weights.h5')
+
                 time_step += 1
         
         env.stop()
@@ -226,7 +230,7 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
     
 
 if __name__ == "__main__":
-    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../config_5/road_network.net.xml')
+    graph, edge_list, node_list, node_to_edge, node_neighbourhood = init_network('../config_3/road_network.net.xml')
     print(node_list)
     print(edge_list)
     run(graph, edge_list, node_list, node_to_edge, node_neighbourhood)
