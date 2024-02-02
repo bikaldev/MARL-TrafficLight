@@ -11,7 +11,7 @@ from replay_buffer import ReplayBuffer
 import tensorflow as tf
 # from tensorflow import tf_agents
 
-EPOCHS = 4
+EPOCHS = 2
 SIGMA = 0.99
 EPSILON = 0.9
 C1 = 20
