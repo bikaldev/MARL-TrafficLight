@@ -9,19 +9,25 @@ from q_network import node_initialization, Q_NETWORK
 from replay_buffer import ReplayBuffer
 
 import tensorflow as tf
+import pickle
+
 # from tensorflow import tf_agents
 
 EPOCHS = 100
 SIGMA = 0.99
 EPSILON = 0.9
-C1 = 20
+C1 = 40
 EPISODE_LENGTH = 3500
 BUFFER_SIZE = 50
 BATCH_SIZE = 16
 LEARNING_RATE = 0.01
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate = LEARNING_RATE)
+TARGET_COPY = 2
 
 weight_path = './weights/'
+
+
+
 
 # This function creates a logical graph from the provided .net.xml file of a road network
 # It returns a tuple (nodes, edges) where nodes is a list of objects of type nodes 
@@ -133,11 +139,15 @@ def print_list(lt):
 # Runs the simulation
 def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
     env = SimulationEnv()
+
     q_net = Q_NETWORK(graph,edge_list, node_list, node_to_edge, node_neighbourhood)
- 
     tar_q_net = Q_NETWORK(graph, edge_list, node_list, node_to_edge, node_neighbourhood)
+    
+    
     env.set_graph(graph)
     avg_reward_list = []
+    avg_loss_dict = {}
+    history = []
     for epoch in range(EPOCHS):
         env.start()
         sim_step = 0
@@ -154,7 +164,8 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
         print("Epoch: "+str(epoch))
         if(epoch >= 1):
             avg_reward = sum(avg_reward_list)/len(avg_reward_list)
-            print("avg reward of epoch "+str(epoch) + " is "+str(avg_reward))
+            print("avg reward of epoch "+str(epoch-1) + " is "+str(avg_reward))
+            history.append(avg_reward)
 
         while(sim_step < EPISODE_LENGTH):
             if(time_step % 25 != 0 or time_step == 0):
@@ -164,14 +175,6 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                     if(time_step != 0):
                         avg_reward_list.append(sum(reward_list))
                         print("Time Step: "+str(time_step) + " Sim step: "+str(sim_step) +" Total Reward : "+str(sum(reward_list)))
-                        # print_list(q_val_list)
-                        # print("inputs: ")
-                        # print_list(inputs)
-                        # print("joint_action: ")
-                        # print(joint_action)
-                        # print("reward_list: ")
-                        # print(reward_list)
-                        #Store transition(inputs, joint_action, reward_list) on replay buffer
                         buffer.push((inputs, joint_action, reward_list))
                         
 
@@ -187,7 +190,7 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
             else:
 
         # env.stop()
-
+                avg_loss_list = []
                 for c in range(C1):
                     with tf.GradientTape() as tape:
                         minibatch = buffer.sample(BATCH_SIZE)
@@ -207,6 +210,7 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                             minibatch[trans_idx] = minibatch[trans_idx] + (y_val_list,)
                         
                         loss = compute_loss(minibatch, node_list, q_net)
+                        avg_loss_list.append(loss)
                     
                     grads = tape.gradient(loss, q_net.trainable_variables)
                     # print(q_net.trainable_variables)
@@ -216,18 +220,31 @@ def run(graph, edge_list, node_list, node_to_edge, node_neighbourhood):
                     # print(grads)
                     OPTIMIZER.apply_gradients(zip(grads, q_net.trainable_variables))
                     # return None
-        
+
+                if(epoch in avg_loss_dict):
+                    avg_loss_dict[epoch].append(sum(avg_loss_list)/len(avg_loss_list))
+                else:
+                    avg_loss_dict[epoch] = [sum(avg_loss_list)/len(avg_loss_list)]
+
                 # print(q_net.trainable_variables)
-                if(epoch % 2 == 0):
+                if(epoch % TARGET_COPY == 0 and epoch>1):
                     tar_q_net = deepcopy(q_net)
-                
-                if(epoch % 10 == 0):
-                    q_net.save_weights(path + 'q_net_'+str(epoch)+'.weights.h5')
-                    tar_q_net.save_weights(path + 'tar_q_net_'+str(epoch)+'.weights.h5')
+
+
+                if(epoch % 25 == 0):
+                    q_net.save_weights(weight_path + 'q_net_'+str(epoch)+'.weights.h5')
+                    tar_q_net.save_weights(weight_path + 'tar_q_net_'+str(epoch)+'.weights.h5')
 
                 time_step += 1
         
         env.stop()
+
+    with open("history","wb") as fp:
+        pickle.dump(history, fp)
+
+    with open("loss","wb") as f:
+        pickle.dump(avg_loss_dict, f)
+
 
 
 

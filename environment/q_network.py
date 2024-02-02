@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import keras
 
 NUM_OF_LANES_PER_EDGE = 2
 EDGE_INPUT_SHAPE = (3*NUM_OF_LANES_PER_EDGE,1)
@@ -67,6 +68,31 @@ class Q_NETWORK(tf.keras.Model):
         self.q_val_1 = tf.keras.layers.Dense(15, activation='relu')
         # self.q_val_3 = tf.keras.layers.Dense(5, activation='relu')
         self.q_val_2 = tf.keras.layers.Dense(2, activation='relu')
+
+    def get_config(self):
+        base_config = super().get_config()
+        config = {
+            "graph": keras.saving.serialize_keras_object(self.graph),
+            "edge_list": keras.saving.serialize_keras_object(self.edge_list),
+            "node_list": keras.saving.serialize_keras_object(self.node_list),
+            "node_to_edge": keras.saving.serialize_keras_object(self.node_to_edge),
+            "node_neighbourhood": keras.saving.serialize_keras_object(self.node_neighbourhood),
+        }
+        return {**base_config, **config}
+
+    @classmethod
+    def from_config(cls, config):
+        graph_config = config.pop("graph")
+        graph = keras.saving.deserialize_keras_object(graph_config)
+        edge_list_config = config.pop("edge_list")
+        edge_list = keras.saving.deserialize_keras_object(edge_list_config)
+        node_list_config = config.pop("node_list")
+        node_list = keras.saving.deserialize_keras_object(node_list_config)
+        node_to_edge_config = config.pop("node_to_edge")
+        node_to_edge = keras.saving.deserialize_keras_object(node_to_edge_config)
+        node_neighbourhood_config = config.pop("node_neighbourhood")
+        node_neighbourhood = keras.saving.deserialize_keras_object(node_neighbourhood_config)
+        return cls(graph,edge_list,node_list,node_to_edge,node_neighbourhood,**config)
 
     
     def node_init(self, inputs: tuple[list[tf.Tensor], list[int]]):
